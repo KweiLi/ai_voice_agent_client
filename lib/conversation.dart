@@ -45,19 +45,68 @@ class _ConversationState extends State<Conversation> {
                           final isAI = message['isAI'] as bool;
                           final path = message['path'] as String;
 
+                          final double playerWidth =
+                              MediaQuery.of(context).size.width / 3;
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8.0,
                             ),
-                            child: AudioPlayer(
-                              source: path,
-                              isAI: isAI, 
-                              onDelete: () {
-                                setState(() {
-                                  audioMessages.removeAt(index);
-                                });
-                              },
-                            ),
+                            child:
+                                (message['isLoading'] == true)
+                                    ? Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Container(
+                                        height: 60,
+                                        width: playerWidth,
+                                        alignment: Alignment.centerLeft,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                color: Colors.orange.withValues(
+                                                  alpha: 0.6,
+                                                ),
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              "AI is thinking...",
+                                              style: TextStyle(
+                                                color: Colors.orange.withValues(
+                                                  alpha: 0.6,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    : AudioPlayer(
+                                      source: path,
+                                      isAI: isAI,
+                                      onDelete: () {
+                                        setState(() {
+                                          audioMessages.removeAt(index);
+                                        });
+                                      },
+                                    ),
                           );
                         },
                       ),
@@ -74,13 +123,30 @@ class _ConversationState extends State<Conversation> {
                   setState(() {
                     // audioPath = path;
                     // showPlayer = true;
+                    // audioMessages.add({'path': path, 'isAI': false});
                     audioMessages.add({'path': path, 'isAI': false});
+                    // Add a loading placeholder for the AI response
+                    audioMessages.add({
+                      'path': '',
+                      'isAI': true,
+                      'isLoading': true,
+                    });
                   });
                 },
                 onAIResponse: (aiPath) {
                   if (kDebugMode) print('AI response audio path: $aiPath');
                   setState(() {
-                    audioMessages.add({'path': aiPath, 'isAI': true});
+                    // audioMessages.add({'path': aiPath, 'isAI': true});
+                    final index = audioMessages.indexWhere(
+                      (msg) => msg['isAI'] == true && msg['isLoading'] == true,
+                    );
+                    if (index != -1) {
+                      audioMessages[index] = {
+                        'path': aiPath,
+                        'isAI': true,
+                        'isLoading': false,
+                      };
+                    }
                   });
                 },
               ),

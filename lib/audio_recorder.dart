@@ -147,7 +147,6 @@ class _RecorderState extends State<Recorder> with AudioRecorderMixin {
           final responseBlob = html.Blob([responseBytes], 'audio/wav');
           final responseUrl = html.Url.createObjectUrlFromBlob(responseBlob);
           widget.onAIResponse?.call(responseUrl);
-          
           // Auto-play response
           final audioElement =
               html.AudioElement()
